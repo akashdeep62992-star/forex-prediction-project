@@ -1,0 +1,27 @@
+# Use image with TA-Lib pre-installed
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install minimal dependencies
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip first
+RUN pip install --upgrade pip
+
+# Copy requirements and install packages
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application
+COPY . .
+
+# Create user
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8501
+
+# Use shell form to properly expand environment variables
+CMD streamlit run app.py --server.port=${PORT:-8501} --server.address=0.0.0.0 --server.headless=true
+
