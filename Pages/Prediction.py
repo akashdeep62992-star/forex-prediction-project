@@ -253,19 +253,18 @@ def price_predictor(lstm_data,gru_data):
     return prediction_1, prediction_2
 
 with st.container():
-    st.markdown("<h1 style='text-align: center; font-size:4rem'>Predication Zone</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>Prediction Zone</h1>", unsafe_allow_html=True)
     st.markdown(
-        "<p style='text-align: center; font-size: 1.2rem; max-width: 800px; margin: auto;'>In this part"
-        " you can try and test multiple backtesting strategies with your own data or we have some samples data as well.</p>",
+        "<p class='page-lead'>Forecast the next GBP/USD 4-hour candles with pre-trained LSTM and GRU models,"
+        " and read the market trend detected by the KMeans + XGBoost zone model.</p>",
         unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     # --- Top buttons ---
-    c1, c2, c3, c4, c5 = st.columns([1, 1, 1, 1, 1])
-    with c3:
-        if st.button("🔍 Show Models"):
+    c1, c2, c3 = st.columns([1, 1, 1])
+    with c2:
+        if st.button("🔍 Show Models", use_container_width=True):
             show_feature()
-    with c5:
         st.caption("Only for 4H GBP/USD")
 
     st.markdown("<div class='main-container'>", unsafe_allow_html=True)

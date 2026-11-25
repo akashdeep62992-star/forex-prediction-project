@@ -33,13 +33,15 @@ This application combines advanced machine learning models with technical analys
 - Trade parameter controls
 - Exportable trade data (CSV format)
 - Educational content on prediction methods and risk management
+- Responsive layout that adapts to phones, tablets and desktops
+- Light and dark themes (toggle in the sidebar)
 
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Forex-Prediction-App.git
-cd Forex-Prediction-App
+git clone https://github.com/akashdeep62992-star/forex-prediction-project.git
+cd forex-prediction-project
 ```
 
 2. Install dependencies:
@@ -127,3 +129,7 @@ streamlit run app.py
 
 - Trading and machine learning community
 - Open source libraries that made this project possible
+
+## Author
+
+Built by **Akashdeep** ([@akashdeep62992-star](https://github.com/akashdeep62992-star)).

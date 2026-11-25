@@ -2,11 +2,13 @@ import streamlit as st
 
 # Set page config must be the first Streamlit command
 st.set_page_config(
-    layout="wide", 
+    layout="wide",
     page_title="Forex Price Predictor",
     page_icon="📈",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="auto"
 )
+
+AUTHOR = "Akashdeep"
 
 # Initialize session state for dark mode
 if 'dark_mode' not in st.session_state:
@@ -21,8 +23,11 @@ COLOR_THEME = {
         'background': '#F8FAFC',   # Light Gray
         'card': '#FFFFFF',         # White
         'text': '#1E293B',         # Dark Gray
+        'muted': '#64748B',        # Secondary text
         'border': '#E2E8F0',       # Light Border
-        'sidebar': '#FFFFFF'       # Sidebar background
+        'sidebar': '#FFFFFF',      # Sidebar background
+        'shadow': 'rgba(15, 23, 42, 0.08)',
+        'shadow_hover': 'rgba(15, 23, 42, 0.14)'
     },
     'dark': {
         'primary': '#3B82F6',      # Bright Blue
@@ -31,20 +36,24 @@ COLOR_THEME = {
         'background': '#0F172A',   # Dark Blue
         'card': '#1E293B',         # Dark Card
         'text': '#F1F5F9',         # Light Text
+        'muted': '#94A3B8',        # Secondary text
         'border': '#334155',       # Dark Border
-        'sidebar': '#1E293B'       # Sidebar background
+        'sidebar': '#111827',      # Sidebar background
+        'shadow': 'rgba(0, 0, 0, 0.35)',
+        'shadow_hover': 'rgba(0, 0, 0, 0.5)'
     }
 }
 
 # Get current colors based on dark mode
 colors = COLOR_THEME['dark' if st.session_state.dark_mode else 'light']
 
-# Modern CSS with Dark Mode
+# Responsive, theme-aware CSS shared by every page
 st.markdown(f"""
 <style>
-/* ===== FOREX PRICE PREDICTOR - PROFESSIONAL THEME ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ===== THEME TOKENS ===== */
 :root {{
-    /* Color Variables */
     --primary-color: {colors['primary']};
     --secondary-color: {colors['secondary']};
     --accent-color: {colors['accent']};
@@ -52,71 +61,111 @@ st.markdown(f"""
     --bg-secondary: {colors['card']};
     --bg-sidebar: {colors['sidebar']};
     --text-primary: {colors['text']};
-    --text-secondary: {colors['text']}99;
+    --text-secondary: {colors['muted']};
     --border-color: {colors['border']};
     --gradient-primary: linear-gradient(135deg, {colors['primary']} 0%, {colors['secondary']} 100%);
     --gradient-accent: linear-gradient(135deg, {colors['accent']} 0%, {colors['primary']} 100%);
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.12);
+    --shadow: 0 8px 24px {colors['shadow']};
+    --shadow-hover: 0 16px 36px {colors['shadow_hover']};
+    --radius-lg: clamp(14px, 2vw, 20px);
+    --radius-md: 12px;
+    --space-card: clamp(1rem, 2.5vw, 2rem);
 }}
 
-[data-theme="dark"] {{
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.4);
+/* ===== GLOBAL ===== */
+html {{
+    -webkit-text-size-adjust: 100%;
 }}
 
-/* ===== GLOBAL STYLES ===== */
 .stApp {{
     background: var(--bg-primary);
     color: var(--text-primary);
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    transition: all 0.3s ease;
 }}
 
-/* ===== SIDEBAR STYLING ===== */
-section[data-testid="stSidebar"] {{
-    background: var(--bg-sidebar) !important;
-    border-right: 1px solid var(--border-color);
+.stApp, .stApp p, .stApp li, .stApp label, .stApp span,
+[data-testid="stMarkdownContainer"],
+[data-testid="stWidgetLabel"],
+[data-testid="stCaptionContainer"] {{
+    color: var(--text-primary);
 }}
 
-section[data-testid="stSidebar"] .stButton button {{
-    width: 100%;
-    margin: 5px 0;
-    border: 1px solid var(--border-color) !important;
+[data-testid="stCaptionContainer"] {{
+    color: var(--text-secondary) !important;
 }}
 
-/* ===== ANIMATIONS ===== */
-@keyframes fadeInUp {{
-    from {{ opacity: 0; transform: translateY(30px); }}
-    to {{ opacity: 1; transform: translateY(0); }}
+[data-testid="stHeader"] {{
+    background: transparent;
 }}
 
-@keyframes slideInLeft {{
-    from {{ opacity: 0; transform: translateX(-50px); }}
-    to {{ opacity: 1; transform: translateX(0); }}
+/* Main content width + fluid gutters */
+.block-container, [data-testid="stMainBlockContainer"] {{
+    max-width: 1320px;
+    padding-top: clamp(2.5rem, 5vw, 4rem) !important;
+    padding-left: clamp(1rem, 4vw, 3rem) !important;
+    padding-right: clamp(1rem, 4vw, 3rem) !important;
+    padding-bottom: 3rem !important;
 }}
 
-/* ===== TYPOGRAPHY ===== */
+/* Media never overflows its column */
+[data-testid="stImage"] img,
+[data-testid="stMarkdownContainer"] img,
+[data-testid="stPyplot"] img,
+.stApp video {{
+    max-width: 100%;
+    height: auto;
+}}
+
+/* Keep the app's root from scrolling sideways on narrow screens */
+[data-testid="stAppViewContainer"], [data-testid="stMain"] {{
+    overflow-x: hidden;
+}}
+
+[data-testid="stImage"] img {{
+    border-radius: var(--radius-md);
+}}
+
+[data-testid="stPlotlyChart"], .stPlotlyChart, .js-plotly-plot {{
+    width: 100% !important;
+}}
+
+[data-testid="stDataFrame"], .stDataFrame, [data-testid="stTable"] {{
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+}}
+
+pre, code {{
+    white-space: pre-wrap;
+    word-break: break-word;
+}}
+
+/* ===== TYPOGRAPHY (fluid) ===== */
 h1 {{
     background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    font-size: 3.5rem !important;
+    font-size: clamp(2rem, 4.5vw + 0.5rem, 3.5rem) !important;
     font-weight: 800 !important;
+    line-height: 1.15 !important;
     text-align: center;
-    margin-bottom: 1rem;
-    animation: fadeInUp 0.8s ease-out;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+    animation: fadeInUp 0.6s ease-out;
+    overflow-wrap: anywhere;
 }}
 
 h2 {{
-    font-size: 2.5rem !important;
+    font-size: clamp(1.4rem, 2.5vw + 0.6rem, 2.3rem) !important;
     font-weight: 700 !important;
+    line-height: 1.25 !important;
     color: var(--text-primary) !important;
     text-align: center;
-    margin: 2rem 0 1.5rem 0;
+    margin: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(1rem, 2.5vw, 1.75rem) 0;
     position: relative;
-    animation: slideInLeft 0.6s ease-out;
+    overflow-wrap: anywhere;
 }}
 
 h2:after {{
@@ -125,177 +174,349 @@ h2:after {{
     bottom: -10px;
     left: 50%;
     transform: translateX(-50%);
-    width: 80px;
+    width: 72px;
     height: 4px;
     background: var(--gradient-primary);
     border-radius: 2px;
 }}
 
+h2[style*="left"]:after {{
+    left: 0;
+    transform: none;
+}}
+
+/* Streamlit's own st.header / st.subheader */
+[data-testid="stHeadingWithActionElements"] h2:after,
+[data-testid="stDialog"] h2:after {{
+    display: none;
+}}
+
 h3 {{
-    font-size: 1.6rem !important;
+    font-size: clamp(1.1rem, 1.2vw + 0.8rem, 1.5rem) !important;
     font-weight: 600 !important;
     color: var(--primary-color) !important;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }}
 
-p {{
+p, li {{
     line-height: 1.7;
-    color: var(--text-primary);
+    font-size: clamp(0.95rem, 0.3vw + 0.88rem, 1.05rem);
 }}
 
-/* ===== CONTAINERS & CARDS ===== */
-.main-container, .info-container {{
-    background: var(--bg-secondary);
-    border-radius: 20px;
-    padding: 2.5rem;
-    margin: 2rem 0;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow);
-    animation: fadeInUp 0.6s ease-out;
-    transition: all 0.3s ease;
+.page-lead {{
+    text-align: center;
+    font-size: clamp(1rem, 0.8vw + 0.85rem, 1.25rem) !important;
+    max-width: 780px;
+    margin: 0 auto 1.5rem auto;
+    color: var(--text-secondary) !important;
 }}
 
-.main-container:hover, .info-container:hover {{
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
+/* ===== CARDS ===== */
+/* Empty wrapper divs left behind by st.markdown('<div ...>') render as blank boxes, so hide them */
+.main-container:empty, .info-container:empty {{
+    display: none;
 }}
 
 .info-card {{
     background: var(--bg-secondary);
-    border-radius: 16px;
-    padding: 2rem;
+    border-radius: var(--radius-lg);
+    padding: var(--space-card);
+    border: 1px solid var(--border-color);
     border-left: 4px solid var(--primary-color);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     height: 100%;
 }}
 
-.info-card:hover {{
-    transform: translateY(-5px);
-    border-left-color: var(--accent-color);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+.info-card ul {{
+    padding-left: 1.25rem;
+    margin: 0;
 }}
 
 .highlight-card {{
     background: var(--gradient-primary);
-    color: white !important;
+    border: none;
+    border-left: 4px solid var(--accent-color);
 }}
 
-.highlight-card h3, 
-.highlight-card p, 
+.highlight-card h3,
+.highlight-card p,
+.highlight-card li,
 .highlight-card b {{
-    color: white !important;
+    color: #FFFFFF !important;
+}}
+
+@media (hover: hover) {{
+    .info-card:hover {{
+        transform: translateY(-4px);
+        border-left-color: var(--accent-color);
+        box-shadow: var(--shadow-hover);
+    }}
 }}
 
 /* ===== BUTTONS ===== */
-div[data-testid="stButton"] > button {{
-    border-radius: 12px !important;
+div[data-testid="stButton"] > button,
+div[data-testid="stDownloadButton"] > button,
+div[data-testid="stFormSubmitButton"] > button {{
+    border-radius: var(--radius-md) !important;
     border: none !important;
     background: var(--gradient-primary) !important;
-    color: white !important;
-    transition: all 0.3s ease !important;
-    padding: 12px 32px !important;
+    color: #FFFFFF !important;
+    padding: 0.65rem 1.5rem !important;
+    min-height: 44px;
     font-weight: 600 !important;
-    box-shadow: 0 4px 15px var(--primary-color)40 !important;
+    box-shadow: 0 4px 14px {colors['primary']}40 !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }}
 
-div[data-testid="stButton"] > button:hover {{
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px var(--primary-color)60 !important;
+div[data-testid="stButton"] > button p,
+div[data-testid="stDownloadButton"] > button p {{
+    color: #FFFFFF !important;
+}}
+
+@media (hover: hover) {{
+    div[data-testid="stButton"] > button:hover {{
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px {colors['primary']}60 !important;
+    }}
 }}
 
 /* ===== FORM ELEMENTS ===== */
-.stSelectbox > div {{
-    border: 2px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    background: var(--bg-secondary) !important;
-    transition: all 0.3s ease;
-}}
-
-.stSelectbox > div:hover {{
-    border-color: var(--primary-color) !important;
-}}
-
-.stNumberInput input {{
-    border: 2px solid var(--border-color) !important;
-    border-radius: 12px !important;
+.stSelectbox div[data-baseweb="select"] > div,
+.stMultiSelect div[data-baseweb="select"] > div,
+.stTextInput input,
+.stNumberInput input,
+.stDateInput input,
+.stTextArea textarea {{
     background: var(--bg-secondary) !important;
     color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
 }}
 
-.stNumberInput input:focus {{
-    border-color: var(--primary-color) !important;
-    box-shadow: 0 0 0 3px var(--primary-color)20 !important;
+.stNumberInput input:focus, .stTextInput input:focus {{
+    box-shadow: 0 0 0 3px {colors['primary']}33 !important;
 }}
 
-/* ===== METRICS & DATA DISPLAY ===== */
-[data-testid="metric-container"] {{
+[data-testid="stFileUploaderDropzone"] {{
     background: var(--bg-secondary) !important;
+    border: 2px dashed var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+}}
+
+/* ===== METRICS ===== */
+[data-testid="stMetric"], [data-testid="metric-container"] {{
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: clamp(0.75rem, 1.5vw, 1rem);
+    box-shadow: var(--shadow);
+    height: 100%;
+}}
+
+[data-testid="stMetricValue"] {{
+    font-size: clamp(1.15rem, 1.5vw + 0.7rem, 1.9rem) !important;
+    color: var(--text-primary) !important;
+    overflow-wrap: anywhere;
+    white-space: normal !important;
+}}
+
+[data-testid="stMetricValue"] > div {{
+    white-space: normal !important;
+}}
+
+[data-testid="stMetricLabel"] p {{
+    color: var(--text-secondary) !important;
+    white-space: normal !important;
+}}
+
+/* ===== EXPANDERS ===== */
+[data-testid="stExpander"] details {{
+    background: var(--bg-secondary);
     border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    padding: 1rem !important;
+    border-radius: var(--radius-md) !important;
 }}
 
-.stDataFrame {{
-    border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
+[data-testid="stExpander"] summary:hover p {{
+    color: var(--primary-color) !important;
 }}
 
-/* ===== EXPANDER STYLING ===== */
-.streamlit-expanderHeader {{
-    background: var(--bg-secondary) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    margin: 5px 0 !important;
-}}
-
-.streamlit-expanderContent {{
-    background: var(--bg-secondary) !important;
-    border-radius: 0 0 12px 12px !important;
-}}
-
-/* ===== TABS STYLING ===== */
+/* ===== TABS (scroll horizontally instead of squashing) ===== */
 .stTabs [data-baseweb="tab-list"] {{
-    gap: 2px;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
 }}
 
 .stTabs [data-baseweb="tab"] {{
+    flex: 0 0 auto;
+    white-space: nowrap;
     background: var(--bg-secondary) !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 12px 12px 0 0 !important;
-    margin: 0 2px !important;
+    border-radius: 10px !important;
+    padding: 0.4rem 0.9rem !important;
+    height: auto !important;
 }}
 
 .stTabs [aria-selected="true"] {{
     background: var(--gradient-primary) !important;
-    color: white !important;
 }}
 
-/* ===== DIALOG STYLING ===== */
-[data-testid="stDialog"] {{
+.stTabs [aria-selected="true"] p {{
+    color: #FFFFFF !important;
+}}
+
+.stTabs [data-baseweb="tab-highlight"],
+.stTabs [data-baseweb="tab-border"] {{
+    display: none;
+}}
+
+/* ===== DIALOG ===== */
+[data-testid="stDialog"] > div > div, div[role="dialog"] {{
     background: var(--bg-secondary) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 20px !important;
     color: var(--text-primary) !important;
+    border-radius: var(--radius-lg) !important;
+    max-width: min(640px, 94vw) !important;
 }}
 
-/* ===== RESPONSIVE DESIGN ===== */
-@media (max-width: 768px) {{
-    h1 {{
-        font-size: 2.5rem !important;
+/* ===== SIDEBAR ===== */
+section[data-testid="stSidebar"] {{
+    background: var(--bg-sidebar) !important;
+    border-right: 1px solid var(--border-color);
+}}
+
+section[data-testid="stSidebar"] * {{
+    color: var(--text-primary);
+}}
+
+section[data-testid="stSidebar"] h3 {{
+    color: var(--primary-color) !important;
+    font-size: 1rem !important;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 8px;
+}}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarNavLink"] {{
+    border-radius: 8px;
+}}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarNavLink"][aria-current="page"] {{
+    background: {colors['primary']}22 !important;
+}}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarNavLink"][aria-current="page"] span {{
+    color: var(--primary-color) !important;
+    font-weight: 600;
+}}
+
+.sidebar-credit {{
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    background: var(--gradient-primary);
+    text-align: center;
+    font-weight: 600;
+}}
+
+.sidebar-credit, .sidebar-credit * {{
+    color: #FFFFFF !important;
+}}
+
+/* ===== TAGLINE + FOOTER ===== */
+.company-tagline {{
+    text-align: center;
+    padding: 0.25rem 0 1rem 0;
+}}
+
+.company-tagline .tagline-text {{
+    color: var(--text-primary);
+    font-size: clamp(1rem, 1.5vw + 0.6rem, 1.6rem);
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.3;
+}}
+
+.company-tagline .tagline-subtitle {{
+    color: var(--text-secondary);
+    font-size: clamp(0.85rem, 0.5vw + 0.75rem, 1.05rem);
+    margin: 4px 0 0 0;
+}}
+
+.app-footer {{
+    margin-top: 3rem;
+    padding: 1.25rem 0 0.5rem 0;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}}
+
+.app-footer b {{
+    color: var(--text-primary);
+}}
+
+/* ===== RESPONSIVE LAYOUT ===== */
+
+/* Tablets / small laptops: let column rows wrap instead of squeezing */
+@media (max-width: 1024px) {{
+    [data-testid="stHorizontalBlock"] {{
+        flex-wrap: wrap !important;
+        row-gap: 1rem;
     }}
-    h2 {{
-        font-size: 2rem !important;
+    [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+    [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
+        flex: 1 1 calc(50% - 1rem) !important;
+        min-width: min(240px, 100%) !important;
     }}
-    .main-container, .info-container {{
-        padding: 1.5rem;
-        margin: 1rem 0;
+    /* Spacer columns (used only for centering) just waste space on small screens */
+    [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:not(:has([data-testid="stElementContainer"])),
+    [data-testid="stHorizontalBlock"] > [data-testid="column"]:not(:has([data-testid="element-container"])) {{
+        display: none !important;
     }}
 }}
 
-/* ===== CUSTOM SCROLLBAR ===== */
+/* Phones: single column, full-width controls */
+@media (max-width: 640px) {{
+    [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+    [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        min-width: 100% !important;
+    }}
+    div[data-testid="stButton"] > button,
+    div[data-testid="stDownloadButton"] > button {{
+        width: 100% !important;
+    }}
+    h2:after {{
+        width: 56px;
+        height: 3px;
+    }}
+    .info-card {{
+        border-left-width: 3px;
+    }}
+}}
+
+/* ===== MOTION ===== */
+@keyframes fadeInUp {{
+    from {{ opacity: 0; transform: translateY(20px); }}
+    to {{ opacity: 1; transform: translateY(0); }}
+}}
+
+@media (prefers-reduced-motion: reduce) {{
+    *, *::before, *::after {{
+        animation: none !important;
+        transition: none !important;
+    }}
+}}
+
+/* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar {{
     width: 8px;
+    height: 8px;
 }}
 
 ::-webkit-scrollbar-track {{
@@ -310,121 +531,31 @@ div[data-testid="stButton"] > button:hover {{
 ::-webkit-scrollbar-thumb:hover {{
     background: var(--secondary-color);
 }}
-
 </style>
 """, unsafe_allow_html=True)
 
-# Enhanced company tagline with dynamic CSS
-st.markdown(f"""
-<style>
-.company-tagline-wrapper {{
-    margin-top: -8px;
-    padding-top: 0;
-    text-align: center;
-    position: relative;
-}}
-
-.company-tagline {{
-    padding: 10px 0;
-    margin: 0 0 20px 0;
-}}
-
-.tagline-text {{
-    color: #222;
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0;
-}}
-
-.tagline-subtitle {{
-    color: #555;
-    font-size: 1.1rem;
-    margin-top: 6px;
-    font-weight: 400;
-}}
-</style>
-
-<div class="company-tagline-wrapper">
-  <div class="company-tagline">
-      <h2 class="tagline-text">Driven By Integrity, Powered by Progress</h2>
-      <p class="tagline-subtitle">Professional Forex Analysis & Prediction Solutions</p>
-  </div>
+# Company tagline shown above every page
+st.markdown("""
+<div class="company-tagline">
+    <p class="tagline-text">Driven By Integrity, Powered by Progress</p>
+    <p class="tagline-subtitle">Professional Forex Analysis &amp; Prediction Solutions</p>
 </div>
 """, unsafe_allow_html=True)
-st.markdown(f"""
-    <style>
-    /* ===== SIDEBAR NAVIGATION TEXT - STABLE SELECTORS ===== */
-    
-    /* Target navigation section titles (Info, Model) */
-    section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] h3,
-    section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] h4 {{
-        color: var(--text-primary) !important;
-        font-weight: 600 !important;
-    }}
-    
-    /* Target all sidebar text elements */
-    section[data-testid="stSidebar"] * {{
-        color: var(--text-primary) !important;
-    }}
-    
-    /* Target navigation buttons and links */
-    section[data-testid="stSidebar"] button,
-    section[data-testid="stSidebar"] a,
-    section[data-testid="stSidebar"] div[role="button"] {{
-        color: var(--text-primary) !important;
-        font-weight: 500 !important;
-        transition: color 0.3s ease !important;
-    }}
-    
-    /* Highlight active/selected navigation items */
-    section[data-testid="stSidebar"] button[aria-pressed="true"],
-    section[data-testid="stSidebar"] button[data-selected="true"],
-    section[data-testid="stSidebar"] div[aria-selected="true"] {{
-        color: var(--primary-color) !important;
-        font-weight: 600 !important;
-        background-color: var(--primary-color)20 !important;
-        border-radius: 8px !important;
-    }}
-    
-    /* Target navigation page names specifically */
-    section[data-testid="stSidebar"] .st-emotion-cache-* {{
-        color: var(--text-primary) !important;
-    }}
-    
-    /* Fallback for all sidebar content */
-    section[data-testid="stSidebar"] [class*="st-emotion-cache"] {{
-        color: var(--text-primary) !important;
-    }}
-    
-    /* Settings section styling */
-    section[data-testid="stSidebar"] h3 {{
-        color: var(--primary-color) !important;
-        border-bottom: 2px solid var(--border-color) !important;
-        padding-bottom: 8px !important;
-    }}
-    
-    </style>
-    """, unsafe_allow_html=True)
 
 
 # Dark Mode Toggle in Sidebar
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
-    
-    # Use callback to handle dark mode changes
+
     def toggle_dark_mode():
         st.session_state.dark_mode = st.session_state.dark_mode_toggle
-    
-    # Dark Mode Toggle with callback
+
     st.toggle(
-        "🌙 Dark Mode", 
-        value=st.session_state.dark_mode, 
+        "🌙 Dark Mode",
+        value=st.session_state.dark_mode,
         key="dark_mode_toggle",
         on_change=toggle_dark_mode
     )
-    
-    st.markdown("---")
-    st.markdown("### 📊 Navigation")
 
 # Main about page
 Main_page = st.Page(
@@ -444,7 +575,7 @@ Backtest_page = st.Page(
 # Future Price prediction
 Predication_page = st.Page(
     page="Pages/Prediction.py",
-    title=("Prediction"),
+    title="Prediction",
     icon="📈"
 )
 
@@ -456,10 +587,23 @@ pg = st.navigation({
 
 # Logo and branding
 st.logo("Asset/Sidebar.png")
-st.sidebar.text("Analysis with Ankit!")
+st.sidebar.markdown(
+    f"<div class='sidebar-credit'>📈 Analysis with {AUTHOR}!</div>",
+    unsafe_allow_html=True
+)
 
 try:
     pg.run()
 except Exception as e:
     st.error(f"An error occurred: {str(e)}")
     st.info("Please refresh the page or check the console for more details.")
+
+st.markdown(
+    f"""
+    <div class="app-footer">
+        Built by <b>{AUTHOR}</b> · Forex Price Predictor<br>
+        <span>For educational purposes only. Not financial advice.</span>
+    </div>
+    """,
+    unsafe_allow_html=True
+)

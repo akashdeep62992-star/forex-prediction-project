@@ -3,8 +3,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from backtesting import Backtest,Strategy
-from pygments.lexer import default
-from tenacity import BaseAction
 from ta.volatility import BollingerBands, KeltnerChannel
 from ta.trend import MACD, EMAIndicator, CCIIndicator, PSARIndicator, IchimokuIndicator, ADXIndicator
 from ta.momentum import RSIIndicator, StochasticOscillator, AwesomeOscillatorIndicator
@@ -101,7 +99,7 @@ def show_results(stats,figure):
     with st.expander("🔍 Click to see all stats"):
         st.dataframe(stats)
     with st.expander("😶‍🌫️ Click to view the corssover place"):
-        st.plotly_chart(figure)
+        st.plotly_chart(figure, use_container_width=True)
 
 
 #=============================================================================
@@ -1306,7 +1304,7 @@ def strat_02(df):
         st.subheader("Hammer")
         col1, col2 = st.columns([1, 2],gap="small")
         with col1:
-            st.image("Asset/hammer.png", width=400,caption="Hammer")
+            st.image("Asset/hammer.png", caption="Hammer", use_container_width=True)
         with col2:
             st.write(
                 """
@@ -1659,14 +1657,14 @@ initialize()
 
 
 with st.container():
-    st.markdown("<h1 style='text-align: center; font-size:4rem'>Backtesting Zone</h1>",unsafe_allow_html=True)
+    st.markdown("<h1>Backtesting Zone</h1>",unsafe_allow_html=True)
     st.markdown(
-        "<p style='text-align: center; font-size: 1.2rem; max-width: 800px; margin: auto;'>In this part"
+        "<p class='page-lead'>In this part"
         " you can try and test multiple backtesting strategies with your own data or we have some samples data as well.</p>",
         unsafe_allow_html=True)
     st.markdown("<br>",unsafe_allow_html=True)
-    c1,c2,c3,c4,c5=st.columns([1,1,1,1,1])
-    with c3:
+    c1, c2, c3 = st.columns([1, 1, 1])
+    with c2:
         if st.button("🔍 Show Strategies",key="show_features",use_container_width=True):
             show_features()
     st.markdown("<div class='main-container'>",unsafe_allow_html=True)
@@ -1690,7 +1688,7 @@ with (st.container()):
                     st.rerun()
 
         if st.session_state.pointer is not None and st.session_state.data_selector==1:
-            st.markdown("<p style:font-size:1.5rem>Upload your dataset in <b>CSV</b> or <b>Excel</b> "
+            st.markdown("<p>Upload your dataset in <b>CSV</b> or <b>Excel</b> "
                              "format to begin. For best result upload a clean and "
                              "well structured data</p>",unsafe_allow_html=True)
             uploaded_file=st.file_uploader("Drag and drop File here",type=["csv","xlsx","xls"],label_visibility="collapsed")
@@ -1883,7 +1881,7 @@ with (st.container()):
         t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20= st.tabs(tab_list)
         with t1:
             st.markdown("<h3 style='text-align:left'>💯EMA Crossover</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The EMA Crossover is a popular trend-following strategy"
+            st.markdown("<p>The EMA Crossover is a popular trend-following strategy"
                         " used in technical analysis to identify potential shifts in market momentum. It involves"
                         " plotting two Exponential Moving Averages (EMAs) of different lengths on a price chart, "
                         "such as a fast-moving 12-period EMA and a slower 20-period EMA. A bullish signal, often called a"
@@ -1897,7 +1895,7 @@ with (st.container()):
 
         with t2:
             st.markdown("<h3 style='text-align:left'>💯CandleStick Patterns</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>Candlestick patterns are a form of technical analysis "
+            st.markdown("<p>Candlestick patterns are a form of technical analysis "
                         "used by traders to visualize and interpret price movements in financial markets like "
                         "stocks, forex, and cryptocurrencies. 📈 Originating from 18th-century Japanese rice "
                         "traders, each 'candle' represents a specific time period (e.g., one day) and provides "
@@ -1916,7 +1914,7 @@ with (st.container()):
 
         with t3:
             st.markdown("<h3 style='text-align:left'>💯RSI Divergence</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The RSI divergence strategy is a powerful tool for "
+            st.markdown("<p>The RSI divergence strategy is a powerful tool for "
                         "identifying potential market reversals by spotting a disconnect between price and momentum. "
                         "It occurs when the price of an asset moves in the opposite direction of the Relative Strength"
                         " Index (RSI) indicator. For instance, a bullish divergence forms when the price records a new"
@@ -1931,7 +1929,7 @@ with (st.container()):
             strat_03(st.session_state.df_uploaded)
         with t4:
             st.markdown("<h3 style='text-align:left'>💯MACD Crossover</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The MACD Crossover is a classic trading signal used "
+            st.markdown("<p>The MACD Crossover is a classic trading signal used "
                         "to identify shifts in market momentum, generated by the Moving Average Convergence "
                         "Divergence indicator's two main lines: the MACD line and the Signal line. A bullish "
                         "crossover 📈 occurs when the faster MACD line crosses above the slower Signal line,"
@@ -1946,7 +1944,7 @@ with (st.container()):
 
         with t5:
             st.markdown("<h3 style='text-align:left'>💯CCI Overbought/Oversold</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The Commodity Channel Index (CCI) is a popular momentum oscillator "
+            st.markdown("<p>The Commodity Channel Index (CCI) is a popular momentum oscillator "
                         "used to identify overbought and oversold conditions. It measures the current price level relative"
                         " to an average price level over a specific period. The CCI oscillates around a zero line, with key"
                         " reference levels typically set at +100 and -100. An overbought 📉 condition is signaled when the"
@@ -1963,7 +1961,7 @@ with (st.container()):
 
         with t6:
             st.markdown("<h3 style='text-align:left'>💯Boillinger Band Reversal</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The Bollinger Band Reversal is a mean-reversion trading strategy "
+            st.markdown("<p>The Bollinger Band Reversal is a mean-reversion trading strategy "
                         "based on the idea that price tends to revert to the middle band, which is a simple moving "
                         "average. A potential sell signal 📉 occurs when the price touches or moves above the upper "
                         "band, suggesting the market is 'overbought' and likely to correct downwards. Conversely, a "
@@ -1978,7 +1976,7 @@ with (st.container()):
 
         with t7:
             st.markdown("<h3 style='text-align:left'>💯Supertrend Indicator</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The Supertrend is a straightforward trend-following indicator"
+            st.markdown("<p>The Supertrend is a straightforward trend-following indicator"
                         " plotted directly on a price chart to identify the current market direction and provide "
                         "clear signals. It appears as a single line that trails the price, turning green and moving "
                         "below the price to signal an uptrend 🟢, or turning red and moving above the price to "
@@ -1991,7 +1989,7 @@ with (st.container()):
 
         with t8:
             st.markdown("<h3 style='text-align:left'>💯Stochastic Oscillator</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The Stochastic Oscillator is a momentum indicator that "
+            st.markdown("<p>The Stochastic Oscillator is a momentum indicator that "
                         "compares a security's closing price to its price range over a specific period, "
                         "oscillating between 0 and 100 to identify overbought and oversold conditions."
                         " A reading above 80 is considered overbought 📉, signaling the price is near "
@@ -2005,7 +2003,7 @@ with (st.container()):
 
         with t9:
             st.markdown("<h3 style='text-align:left'>💯Price Breakout</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>A Price Breakout is a significant trading "
+            st.markdown("<p>A Price Breakout is a significant trading "
                         "event where an asset's price moves decisively through a well-defined"
                         " level of support or resistance that previously contained it. A bullish"
                         " breakout 📈 occurs when the price moves above a resistance level, "
@@ -2021,7 +2019,7 @@ with (st.container()):
 
         with t10:
             st.markdown("<h3 style='text-align:left'>💯Parabolic SAR</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The Parabolic SAR (Stop and Reverse) is a trend-following"
+            st.markdown("<p>The Parabolic SAR (Stop and Reverse) is a trend-following"
                         " indicator used to determine trend direction and provide dynamic exit points. On a"
                         " chart, it appears as a series of dots either below or above the price candles. When"
                         " the dots are below the price 🟢, it signals an uptrend, and the dots themselves act"
@@ -2036,7 +2034,7 @@ with (st.container()):
 
         with t11:
             st.markdown("<h3 style='text-align:left'>💯Ichimoku Cloud Breakout</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>An Ichimoku Cloud Breakout, also known as a"
+            st.markdown("<p>An Ichimoku Cloud Breakout, also known as a"
                         " Kumo Breakout, is a powerful trend-following signal derived from the"
                         " Ichimoku Kinko Hyo indicator, where the 'Cloud' itself represents a "
                         "dynamic zone of support and resistance. A bullish breakout 📈 occurs when"
@@ -2052,7 +2050,7 @@ with (st.container()):
 
         with t12:
             st.markdown("<h3 style='text-align:left'>💯ADX Trend Strength</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The Average Directional Index (ADX) is a "
+            st.markdown("<p>The Average Directional Index (ADX) is a "
                         "technical indicator used to measure the strength of a market trend,"
                         " not its actual direction. As a non-directional indicator, a high ADX "
                         "value can signify either a strong uptrend or a strong downtrend. The "
@@ -2069,7 +2067,7 @@ with (st.container()):
 
         with t13:
             st.markdown("<h3 style='text-align:left'>💯Boillinger Band Squeeze</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>A Bollinger Band Squeeze is a technical pattern that occurs "
+            st.markdown("<p>A Bollinger Band Squeeze is a technical pattern that occurs "
                         "when market volatility falls to a low level, causing the upper and lower bands to visibly"
                         " tighten or contract around the price. 1  This 'squeeze' signifies a period of consolidation"
                         " and is often seen as the calm before the storm, as it frequently precedes a significant "
@@ -2083,7 +2081,7 @@ with (st.container()):
 
         with t14:
             st.markdown("<h3 style='text-align:left'>💯Fibonacci Retracement Levels</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>Fibonacci"
+            st.markdown("<p>Fibonacci"
                         " Retracement is a popular technical analysis tool used to identify potential support and"
                         " resistance levels where a price reversal may occur. 1  After a significant price move "
                         "(a swing high to a swing low, or vice versa), traders apply Fibonacci percentages to the"
@@ -2097,7 +2095,7 @@ with (st.container()):
 
         with t15:
             st.markdown("<h3 style='text-align:left'>💯Pairs Trading</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>Pairs Trading is a market-neutral strategy that aims to"
+            st.markdown("<p>Pairs Trading is a market-neutral strategy that aims to"
                         " profit from the price relationship between two highly correlated securities, "
                         "such as two companies in the same industry. The strategy is based on identifying "
                         "a pair of assets whose prices historically move together and then capitalizing on"
@@ -2111,7 +2109,7 @@ with (st.container()):
 
         with t16:
             st.markdown("<h3 style='text-align:left'>💯VWAP (Volume weighted price crossover)</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The VWAP (Volume Weighted Average Price) Crossover is a popular "
+            st.markdown("<p>The VWAP (Volume Weighted Average Price) Crossover is a popular "
                         "intraday trading signal that uses the VWAP line as a benchmark for short-term momentum. "
                         "The VWAP line represents the average price of a security throughout the day, weighted by"
                         " volume, and often acts as a dynamic level of support or resistance. A bullish crossover"
@@ -2124,7 +2122,7 @@ with (st.container()):
 
         with t17:
             st.markdown("<h3 style='text-align:left'>💯Heikin-Ashi Trend Following</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>Heikin-Ashi, which means 'average bar' in Japanese, is a "
+            st.markdown("<p>Heikin-Ashi, which means 'average bar' in Japanese, is a "
                         "candlestick technique that smooths out price action to make identifying market trends easier."
                         " Unlike standard candles, Heikin-Ashi uses an averaging formula that filters out minor market "
                         "noise, resulting in a cleaner chart view. A trend-following strategy using this technique relies "
@@ -2138,7 +2136,7 @@ with (st.container()):
 
         with t18:
             st.markdown("<h3 style='text-align:left'>💯Chart Patterns (e.g., Head and Shoulders, Triangles)</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>Chart Patterns are distinct formations on a price chart that are used by"
+            st.markdown("<p>Chart Patterns are distinct formations on a price chart that are used by"
                         " technical analysts to forecast future price movements. These patterns, which visually represent "
                         "the tug-of-war between buyers and sellers, fall into two main categories: reversal and continuation"
                         ". Reversal patterns, like the well-known Head and Shoulders 📉, signal that the current trend is "
@@ -2151,7 +2149,7 @@ with (st.container()):
 
         with t19:
             st.markdown("<h3 style='text-align:left'>💯Keltner Channel Strategy</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>A Keltner Channel strategy is typically a trend-following system "
+            st.markdown("<p>A Keltner Channel strategy is typically a trend-following system "
                         "that uses a volatility-based indicator composed of a central Exponential Moving Average "
                         "(EMA) and two outer channels derived from the Average True Range (ATR). The most common "
                         "strategy involves trading breakouts, where a decisive price close outside of the channel"
@@ -2165,7 +2163,7 @@ with (st.container()):
 
         with t20:
             st.markdown("<h3 style='text-align:left'>💯Awesome Oscillator Strategy</h3>", unsafe_allow_html=True)
-            st.markdown("<p style:font-size:1.5rem>The Awesome Oscillator (AO) is a momentum indicator that measures"
+            st.markdown("<p>The Awesome Oscillator (AO) is a momentum indicator that measures"
                         " the market's driving force, displayed as a histogram that fluctuates above and below a central"
                         " zero line. The most fundamental strategy involves the Zero Line Crossover: a bullish signal 📈 "
                         "is generated when the histogram crosses from below to above the zero line, suggesting that"

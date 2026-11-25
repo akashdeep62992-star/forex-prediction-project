@@ -18,11 +18,11 @@ def show_features_form():
 with st.container():
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown(
-        "<h1 style='text-align: center; font-weight: 800;'>Forex Price Predictor</h1>",
+        "<h1>Forex Price Predictor</h1>",
         unsafe_allow_html=True
     )
     st.markdown(
-        "<p style='text-align: center; font-size: 1.3rem; max-width: 800px; margin: 0 auto 30px auto;'>Leverage advanced algorithms and robust backtesting to navigate the FX market—across London, New York, and Tokyo sessions—with data-driven confidence.</p>",
+        "<p class='page-lead'>Leverage advanced algorithms and robust backtesting to navigate the FX market—across London, New York, and Tokyo sessions—with data-driven confidence.</p>",
         unsafe_allow_html=True
     )
     
