@@ -6,11 +6,8 @@ from ta.momentum import RSIIndicator
 from ta.volatility import BollingerBands
 from sklearn.preprocessing import MinMaxScaler
 from ta.volatility import AverageTrueRange
-from keras.losses import MeanSquaredError
 import plotly.graph_objects as go
-from keras.models import load_model
 import joblib
-from keras.metrics import MeanSquaredError
 import xgboost
 import numpy as np
 import matplotlib.pyplot as plt
@@ -57,13 +54,18 @@ def show_feature():
 def get_gbpusd_4h(limit=500, period="120d"):
     try:
         df_1h = yf.download("6B=F", interval="1h", period=period, progress=False)
-        df_1h.columns = ["close", "high", "low", "open", "volume"]
-        df_1h.index.name = "date"
-        if df_1h.empty:
-            st.error("⚠️ No data received from Yahoo Finance. Server might be busy.")
-            return pd.DataFrame()
+        if df_1h is None or df_1h.empty:
+            st.error("⚠️ No data received from Yahoo Finance. Server might be busy, please try again.")
+            return None
 
-        df_4h = df_1h.resample("4H").agg({
+        # Newer yfinance returns (Price, Ticker) MultiIndex columns
+        if isinstance(df_1h.columns, pd.MultiIndex):
+            df_1h.columns = df_1h.columns.get_level_values(0)
+        df_1h.columns = [str(c).lower() for c in df_1h.columns]
+        df_1h = df_1h[["open", "high", "low", "close", "volume"]]
+        df_1h.index.name = "date"
+
+        df_4h = df_1h.resample("4h").agg({
             "open": "first",  # first value in 4h
             "high": "max",  # highest value in 4h
             "low": "min",  # lowest value in 4h
@@ -71,11 +73,14 @@ def get_gbpusd_4h(limit=500, period="120d"):
             "volume": "sum"  # total volume in 4h
         })
         df_4h.dropna(inplace=True)
-        return df_4h
+        if len(df_4h) < 200:
+            st.error("⚠️ Not enough market data received to make a prediction. Please try again later.")
+            return None
+        return df_4h.tail(limit)
 
     except Exception as e:
         st.error(f"❌ Error fetching data: {str(e)}")
-        return pd.DataFrame()
+        return None
 
 #================================================================================
 # FEATURE MAKING
@@ -154,7 +159,8 @@ def trend_predictor(data):
         st.warning("No valid predictions after mapping.")
         return
 
-    zones = np.array_split(pred, 4)
+    bounds = np.linspace(0, len(pred), 5).astype(int)
+    zones = [pred.iloc[bounds[i]:bounds[i + 1]] for i in range(4)]
     label_map = {-1: "Downtrend 📉", 0: "Sideways ➡️", 1: "Uptrend 📈"}
     zone_results = []
     non_empty_zones = 0
@@ -224,16 +230,35 @@ def trend_predictor(data):
 
 
 #================================================================================
+# MODEL LOADING (cached once per server process)
+#===============================================================================
+
+@st.cache_resource(show_spinner="Loading prediction models...")
+def load_models():
+    from tensorflow import keras
+    lstm_model = keras.models.load_model("Models/lstm_model.h5", compile=False)
+    gru_model = keras.models.load_model("Models/gru_model.h5", compile=False)
+    return {
+        "zone_scale": joblib.load("Models/zone_scaler_mm.pkl"),
+        "zone_model": joblib.load("Models/zone_detector.pkl"),
+        "lstm_model": lstm_model,
+        "gru_model": gru_model,
+        "lstm_f_scale": joblib.load("Models/lstm_features.pkl"),
+        "lstm_t_scale": joblib.load("Models/lstm_target.pkl"),
+        "gru_f_scale": joblib.load("Models/gru_features.pkl"),
+        "gru_t_scale": joblib.load("Models/gru_target.pkl"),
+    }
+
+#================================================================================
 # PRICE PREDICTOR
 #===============================================================================
 
-@st._cache_data
 def price_predictor(lstm_data,gru_data):
     L=[x for x in range(1,len(lstm_data.columns))]
     G=[x for x in range(1,len(gru_data.columns))]
 
-    features1=lstm_data.values
-    features2=gru_data.values
+    features1=lstm_data.to_numpy(dtype=float, copy=True)
+    features2=gru_data.to_numpy(dtype=float, copy=True)
 
     features1[:,0]=st.session_state.lstm_t_scale.transform(features1[:,0].reshape(-1,1)).ravel()
     features1[:,L]=st.session_state.lstm_f_scale.transform(features1[:,L])
@@ -345,12 +370,12 @@ with st.container():
         st.session_state.df = get_gbpusd_4h(limit=500, period="120d")
 
         # Show data only if available
-        if st.session_state.df is not None:
+        if st.session_state.df is not None and not st.session_state.df.empty:
             with st.expander("⏰ View Data From Below"):
                 st.dataframe(st.session_state.df.tail(10))
 
 
-    if st.session_state.df is not None:
+    if st.session_state.df is not None and not st.session_state.df.empty:
         st.session_state.df=feature_engineering(st.session_state.df)
 
         zone_name=['zscore_20_15', 'zscore_50_30', 'zscore_50_40', 'zscore_100_80',
@@ -367,90 +392,22 @@ with st.container():
         st.session_state.gru_data=st.session_state.df[gru_name]
 
 
-        st.session_state.zone_scale=joblib.load("Models/zone_scaler_mm.pkl")
-        st.session_state.zone_model=joblib.load("Models/zone_detector.pkl")
-        
-        # Import needed for custom objects
-        import tensorflow as tf
-        from tensorflow import keras
-        import os
-
-        # Define a more comprehensive set of custom objects
-        class CustomInputLayer(keras.layers.InputLayer):
-            @classmethod
-            def from_config(cls, config):
-                if "batch_shape" in config:
-                    config["batch_input_shape"] = config.pop("batch_shape")
-                return cls(**config)
-
-        # Custom loader function with better error handling
-        def load_keras_model_safely(model_path, model_type="LSTM"):
-            try:
-                # Option 1: Try with custom objects
-                model = keras.models.load_model(
-                    model_path,
-                    custom_objects={
-                        "InputLayer": CustomInputLayer,
-                        # Add additional custom objects if needed
-                        "DTypePolicy": tf.keras.mixed_precision.Policy
-                    },
-                    compile=False
-                )
-                return model
-            except Exception as e:
-                st.error(f"Error loading {model_type} model: {str(e)}")
-                st.info(f"Please ensure you have tensorflow==2.13.0 and keras==2.13.1 installed")
-                
-                # Try one more approach - load with skip_mismatch
-                try:
-                    st.warning(f"Attempting alternative loading method...")
-                    model = tf.keras.models.load_model(
-                        model_path, 
-                        compile=False,
-                        options=tf.saved_model.LoadOptions(
-                            experimental_skip_checkpoint=True
-                        )
-                    )
-                    return model
-                except Exception as e2:
-                    st.error(f"Alternative loading also failed: {str(e2)}")
-                    return None
-
-        # Load both models with the safe loader
         try:
-            st.session_state.lstm_model = load_keras_model_safely("Models/lstm_model.h5", "LSTM")
-            
-            # Only compile if model loaded successfully
-            if st.session_state.lstm_model is not None:
-                st.session_state.lstm_model.compile(optimizer="adam", loss=MeanSquaredError(), metrics=["mae"])
-            
-            st.session_state.gru_model = load_keras_model_safely("Models/gru_model.h5", "GRU")
-            
-            # Only compile if model loaded successfully
-            if st.session_state.gru_model is not None:
-                st.session_state.gru_model.compile(optimizer="adam", loss=MeanSquaredError(), metrics=["mae"])
-            
-            # Check if models loaded before continuing
-            if st.session_state.lstm_model is None or st.session_state.gru_model is None:
-                st.error("❌ Model loading failed. Cannot continue with predictions.")
-                st.stop()  # This stops execution of the rest of the script
-                
+            models = load_models()
         except Exception as e:
-            st.error(f"❌ Critical error in model loading: {str(e)}")
+            st.error(f"❌ Could not load the prediction models: {e}")
             st.stop()
-
-        st.session_state.lstm_f_scale=joblib.load("Models/lstm_features.pkl")
-        st.session_state.lstm_t_scale=joblib.load("Models/lstm_target.pkl")
-        st.session_state.gru_f_scale=joblib.load("Models/gru_features.pkl")
-        st.session_state.gru_t_scale=joblib.load("Models/gru_target.pkl")
+        for key, value in models.items():
+            st.session_state[key] = value
 
         st.write("👾 Below is the recent chart of GBPUSD")
         st.caption("This is downloaded from yfinance some delay may present")
-        fig, ax = plt.subplots(figsize=(20, 6))
+        fig, ax = plt.subplots(figsize=(12, 4))
         ax.plot(st.session_state.df["close"], color="green", linewidth=2, label="4Hour")
         ax.legend()
         ax.set_title("GBP/USD Chart")
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
+        plt.close(fig)
 
 
         #trend predictor
@@ -467,8 +424,8 @@ with st.container():
         price_series= lstm_df["close"].astype(float)
         last_price = float(price_series.iloc[-1])
 
-        lstm_pred = float(d1)
-        gru_pred = float(d2)+0.012 #Bias Added
+        lstm_pred = float(np.ravel(d1)[0])
+        gru_pred = float(np.ravel(d2)[0])+0.012 #Bias Added
         avg_pred = (lstm_pred + gru_pred) / 2.0
 
         # Deltas vs last
@@ -764,7 +721,7 @@ with st.container():
                 ohlc_data = st.session_state.df[['open', 'high', 'low', 'close']].tail(100).copy()
                 # Ensure index is proper datetime
                 if not isinstance(ohlc_data.index, pd.DatetimeIndex):
-                    ohlc_data.index = pd.date_range(end=pd.Timestamp.now(), periods=len(ohlc_data), freq='4H')
+                    ohlc_data.index = pd.date_range(end=pd.Timestamp.now(), periods=len(ohlc_data), freq='4h')
 
         # --- Chart Visualization with Toggle ---
         if use_candlestick and has_ohlc_data:

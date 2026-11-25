@@ -95,7 +95,7 @@ html {{
 }}
 
 [data-testid="stHeader"] {{
-    background: transparent;
+    background: var(--bg-primary);
 }}
 
 /* Main content width + fluid gutters */
@@ -321,8 +321,10 @@ div[data-testid="stDownloadButton"] > button p {{
     white-space: normal !important;
 }}
 
-[data-testid="stMetricValue"] > div {{
+[data-testid="stMetricValue"] * {{
     white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
 }}
 
 [data-testid="stMetricLabel"] p {{
@@ -559,7 +561,7 @@ with st.sidebar:
 
 # Main about page
 Main_page = st.Page(
-    page="Pages/About.py",
+    page="views/About.py",
     title="About",
     icon="😉",
     default=True
@@ -567,14 +569,14 @@ Main_page = st.Page(
 
 # Backtesting Strategy page
 Backtest_page = st.Page(
-    page="Pages/Backtest.py",
+    page="views/Backtest.py",
     title="Backtesting",
     icon="📊"
 )
 
 # Future Price prediction
 Predication_page = st.Page(
-    page="Pages/Prediction.py",
+    page="views/Prediction.py",
     title="Prediction",
     icon="📈"
 )
