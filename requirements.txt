@@ -1,38 +1,20 @@
-# Core Streamlit framework
-streamlit
+# Runtime dependencies (versions tested together)
+streamlit==1.67.0
+pandas==3.1.1
+numpy==2.5.5
+scikit-learn==1.9.1
+# CPU-only XGBoost build (avoids ~200 MB of GPU libraries on Linux)
+xgboost-cpu==3.4.1
+ta==0.11.0
+matplotlib==3.11.2
+plotly==7.2.0
+seaborn==0.13.2
+yfinance==1.8.0
+backtesting==0.6.6
+requests==2.34.2
+joblib==1.6.0
+python-dateutil==4.0.0
+openpyxl==3.1.5
 
-# Data manipulation and analysis
-pandas
-numpy
-
-# Machine learning libraries
-scikit-learn
-xgboost
-
-# Deep learning (for LSTM/GRU models)
-tensorflow
-
-# Technical analysis indicators
-ta
-
-# Data visualization
-matplotlib
-plotly
-seaborn
-
-# Financial data source
-yfinance
-# Backtesting framework
-backtesting
-
-# HTTP requests and utilities
-requests
-
-# Model persistence
-joblib
-
-# Date/time utilities (if needed)
-python-dateutil
-
-# Data processing utilities
-openpyxl
+# The LSTM/GRU models run with NumPy (numpy_rnn.py), so TensorFlow is NOT
+# needed to run the app. Install requirements-dev.txt to retrain/export models.

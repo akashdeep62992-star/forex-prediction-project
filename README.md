@@ -44,8 +44,10 @@ git clone https://github.com/akashdeep62992-star/forex-prediction-project.git
 cd forex-prediction-project
 ```
 
-2. Install dependencies:
+2. Create a virtual environment and install dependencies (Python 3.12):
 ```bash
+python -m venv .venv
+.venv/Scripts/activate      # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -r requirements.txt
 ```
 
@@ -53,6 +55,20 @@ pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
+
+TensorFlow is **not** needed to run the app: the trained LSTM/GRU weights are
+exported to `Models/*_weights.npz` and executed with NumPy (`numpy_rnn.py`),
+which keeps memory use low enough for free hosting tiers. To retrain models or
+re-export weights, install `requirements-dev.txt` and run
+`python tools/export_weights.py` (it verifies NumPy output matches Keras).
+
+## Deployment (Render)
+
+The repo includes a `Dockerfile` and a `render.yaml` blueprint.
+
+1. Sign in to [Render](https://render.com) with GitHub.
+2. **New → Blueprint**, pick this repository, and apply.
+3. Render builds the Docker image and serves the app on its `$PORT`.
 
 ## Usage Guide
 
@@ -81,8 +97,8 @@ streamlit run app.py
 ## Technical Architecture
 
 - **Frontend**: Streamlit (Python-based interactive UI)
-- **Machine Learning**: TensorFlow/Keras (LSTM, GRU), XGBoost, scikit-learn (K-means)
-- **Technical Analysis**: Custom implementations and TA-Lib
+- **Machine Learning**: TensorFlow/Keras for training (LSTM, GRU), NumPy for inference, XGBoost, scikit-learn (K-means)
+- **Technical Analysis**: `ta` library plus custom indicators
 - **Backtesting Engine**: Custom implementation with performance metrics
 
 ## Model Information
@@ -106,14 +122,9 @@ streamlit run app.py
 
 ## Dependencies
 
-- Python 3.8+
-- TensorFlow 2.x
-- scikit-learn
-- pandas
-- numpy
-- Streamlit
-- Plotly
-- TA-Lib
+See `requirements.txt` (pinned, tested together) — Python 3.12, Streamlit,
+pandas, NumPy, scikit-learn, XGBoost, ta, Plotly, Matplotlib, yfinance,
+backtesting. TensorFlow only in `requirements-dev.txt`.
 
 ## Future Enhancements
 

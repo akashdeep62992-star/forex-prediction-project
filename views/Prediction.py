@@ -235,9 +235,10 @@ def trend_predictor(data):
 
 @st.cache_resource(show_spinner="Loading prediction models...")
 def load_models():
-    from tensorflow import keras
-    lstm_model = keras.models.load_model("Models/lstm_model.h5", compile=False)
-    gru_model = keras.models.load_model("Models/gru_model.h5", compile=False)
+    # NumPy forward pass of the trained Keras models (no TensorFlow needed at runtime)
+    from numpy_rnn import NumpyRNNModel
+    lstm_model = NumpyRNNModel("Models/lstm_weights.npz")
+    gru_model = NumpyRNNModel("Models/gru_weights.npz")
     return {
         "zone_scale": joblib.load("Models/zone_scaler_mm.pkl"),
         "zone_model": joblib.load("Models/zone_detector.pkl"),

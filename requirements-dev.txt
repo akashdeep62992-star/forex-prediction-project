@@ -1,0 +1,3 @@
+-r requirements.txt
+# Only needed for retraining models and tools/export_weights.py
+tensorflow==2.21.0

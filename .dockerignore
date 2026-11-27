@@ -1,0 +1,8 @@
+.git
+.venv
+**/__pycache__
+**/*.pyc
+Models/*.h5
+Models/*.ipynb
+tools
+requirements-dev.txt
